@@ -5,12 +5,15 @@ edition = "2021"
 license = "CC-BY-NC-4.0"
 
 [features]
+# Only enable the RPi crate if we are on Linux AND the puck feature is on
 puck = ["multivibe-rpi"]
 software = []
 
 [dependencies]
 multivibe-core = { path = "../../crates/multivibe-core" }
-multivibe-rpi = { path = "../../crates/multivibe-rpi", optional = true }
 axum = { version = "0.7", features = ["ws"] }
 tokio = { version = "1.30", features = ["full"] }
-include_dir = "0.7" # To bake the UI into the binary
+include_dir = "0.7"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+multivibe-rpi = { path = "../../crates/multivibe-rpi", optional = true }

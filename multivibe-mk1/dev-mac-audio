@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# This script is used to setup the audio loopback for the development of the Multivibe MK-I.
+#
+# Prerequisites: switchaudio-osx (SwitchAudioSource), BlackHole 2ch
+
+install_if_missing() {
+    local name="$1"
+    local brew_pkg="$2"
+    local check_cmd="$3"
+    if eval "$check_cmd" &>/dev/null; then
+        return 0
+    fi
+    echo "Missing: $name"
+    read -r -p "Would you like to install it with Homebrew? (y/n) " reply
+    case "$reply" in
+        [yY]|[yY][eE][sS])
+            if ! command -v brew &>/dev/null; then
+                echo "Error: Homebrew is not installed. Install from https://brew.sh"
+                exit 1
+            fi
+            echo "Running: brew install $brew_pkg"
+            if brew install "$brew_pkg"; then
+                return 0
+            else
+                echo "Install failed."
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Install with: brew install $brew_pkg"
+            exit 1
+            ;;
+    esac
+}
+
+# 1. Check for SwitchAudioSource (switchaudio-osx)
+install_if_missing "SwitchAudioSource (switchaudio-osx)" "switchaudio-osx" "command -v SwitchAudioSource"
+
+# 2. Check for BlackHole 2ch
+if ! SwitchAudioSource -a | grep -q "BlackHole 2ch"; then
+    install_if_missing "BlackHole 2ch" "blackhole-2ch" "SwitchAudioSource -a | grep -q 'BlackHole 2ch'"
+    echo "If BlackHole still doesn't appear, log out and back in (kernel extension), then re-run this script."
+fi
+
+# 3. Switch to the Multi-Output Device (must exist; create once in Audio MIDI Setup)
+echo "Switching System Output to Multivibe Loopback..."
+if ! SwitchAudioSource -s "Multi-Output Device" 2>/dev/null; then
+    echo "Error: 'Multi-Output Device' not found."
+    echo "Create it in Audio MIDI Setup: add a Multi-Output Device that includes your speakers and BlackHole 2ch, and name it exactly 'Multi-Output Device'."
+    read -r -p "Open Audio MIDI Setup now? (y/n) " reply
+    case "$reply" in
+        [yY]|[yY][eE][sS])
+            open -a "Audio MIDI Setup"
+            echo "After creating the device, re-run this script."
+            ;;
+        *)
+            echo "When ready, run: open -a \"Audio MIDI Setup\""
+            ;;
+    esac
+    exit 1
+fi
+
+# 4. Cleanup function
+cleanup() {
+    echo "Restoring System Output to MacBook Pro Speakers..."
+    SwitchAudioSource -s "MacBook Pro Speakers"
+    exit
+}
+
+trap cleanup SIGINT
+
+echo "Loopback active. Run 'cargo run --features software' in another tab."
+echo "Press Ctrl+C to tear down."
+while true; do sleep 1; done

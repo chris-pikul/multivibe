@@ -67,16 +67,36 @@ between hardware-specific drivers and the core audio engine.
 
 ## 💻 Development Environment
 
-To work on this project without the hardware "Puck," you can run in software mode
-on macOS:
+To work on this project without the hardware "Puck," you can run in **software mode**
+on macOS, using a virtual audio loopback so the server can capture system audio.
 
-1. **Install Audio Loopback:** `brew install blackhole-2ch`
-2. **Configure Output:** Set Mac output to a Multi-Output Device (Speakers + BlackHole).
-3. **Run Development Server:**
+### Prerequisites (macOS)
 
-```bash
-cargo run -p multivibe-server --features software
-```
+- **[BlackHole 2ch](https://github.com/ExistentialAudio/BlackHole)** — virtual audio driver that creates a loopback device. Install: `brew install blackhole-2ch`. After install you may need to log out and back in for the device to appear.
+- **[switchaudio-osx](https://github.com/deweller/switchaudio-osx)** — provides `SwitchAudioSource` to change the system output from the command line. Install: `brew install switchaudio-osx`.
+- **Multi-Output Device** — create once in **Audio MIDI Setup**: add a Multi-Output Device that includes your speakers and **BlackHole 2ch** (e.g. name it "Multi-Output Device"). This lets you hear audio while also sending it to the loopback.
+
+The `dev-mac-audio` script checks for these and will prompt to install missing prerequisites via Homebrew.
+
+### Running software mode on macOS
+
+1. **Start the loopback** (in one terminal):
+
+   ```bash
+   ./dev-mac-audio
+   ```
+
+   This switches system output to your Multi-Output Device and keeps the script running. Press **Ctrl+C** when done; it restores output to your normal speakers.
+
+2. **Run the development server** (in another terminal):
+
+   ```bash
+   cargo run -p multivibe-server --features software
+   ```
+
+> [!NOTE]
+> Because the server requires the usage of the "Microphone" permission on MacOS, you may need to ensure that your terminal
+> has microphone access in the Mac System Settings under Privacy & Security -> Microphone.
 
 ## 📄 License
 
