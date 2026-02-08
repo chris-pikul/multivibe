@@ -1,0 +1,16 @@
+[package]
+name = "multivibe-server"
+version = "0.1.0"
+edition = "2021"
+license = "CC-BY-NC-4.0"
+
+[features]
+puck = ["multivibe-rpi"]
+software = []
+
+[dependencies]
+multivibe-core = { path = "../../crates/multivibe-core" }
+multivibe-rpi = { path = "../../crates/multivibe-rpi", optional = true }
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1.30", features = ["full"] }
+include_dir = "0.7" # To bake the UI into the binary

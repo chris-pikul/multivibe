@@ -1,0 +1,10 @@
+[package]
+name = "multivibe-rpi"
+version = "0.1.0"
+edition = "2021"
+license = "CC-BY-NC-4.0"
+
+[dependencies]
+multivibe-core = { path = "../multivibe-core" }
+audio_thread_priority = "0.30"
+affinity = "0.1"
